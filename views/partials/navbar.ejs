@@ -1,0 +1,33 @@
+<header class="top-header">
+  <div class="header-title">
+    <button type="button" class="mobile-menu-toggle" aria-label="Toggle Menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <h1><%= typeof pageHeading !== 'undefined' ? pageHeading : 'Campus Facility Portal' %></h1>
+  </div>
+
+  <div class="header-actions">
+    <% if (currentUser) { %>
+      <div style="display: flex; align-items: center; gap: 0.85rem;">
+        <span style="font-size: 0.85rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.4rem;">
+          <i class="fa-regular fa-calendar text-muted"></i>
+          <%= formatDate(new Date()) %>
+        </span>
+        <div style="height: 20px; width: 1px; background: var(--border-color);"></div>
+        <div style="display: flex; align-items: center; gap: 0.55rem;">
+          <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">
+            <%= currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U' %>
+          </div>
+          <span style="font-weight: 600; font-size: 0.88rem; color: var(--text-primary);">
+            <%= currentUser.name %>
+          </span>
+        </div>
+      </div>
+    <% } else { %>
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="/auth/login" class="btn btn-secondary btn-sm">Sign In</a>
+        <a href="/auth/register" class="btn btn-primary btn-sm">Student Registration</a>
+      </div>
+    <% } %>
+  </div>
+</header>

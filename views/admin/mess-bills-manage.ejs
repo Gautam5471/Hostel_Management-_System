@@ -1,0 +1,239 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Monthly Mess Billing Management' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Top Header & Action -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Automated Mess Billing System</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+            Generate monthly student mess statements factoring attendance, days present, and rebate deductions.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-primary" data-modal-target="generateBillModal">
+          <i class="fa-solid fa-calculator"></i> Run Monthly Bill Generator
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="card" style="margin-bottom: 1.75rem;">
+        <div class="card-body" style="padding: 1.25rem 1.5rem;">
+          <form method="GET" action="/admin/mess-bills" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+            <div style="flex: 1; min-width: 150px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Billing Month</label>
+              <select name="month" class="form-select">
+                <option value="all">All Months</option>
+                <% ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].forEach(m => { %>
+                  <option value="<%= m %>" <%= selectedFilters.month === m ? 'selected' : '' %>><%= m %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 130px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Year</label>
+              <select name="year" class="form-select">
+                <option value="all">All Years</option>
+                <option value="2026" <%= selectedFilters.year == 2026 ? 'selected' : '' %>>2026</option>
+                <option value="2027" <%= selectedFilters.year == 2027 ? 'selected' : '' %>>2027</option>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 140px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Payment Status</label>
+              <select name="status" class="form-select">
+                <option value="all">All Statuses</option>
+                <option value="Unpaid" <%= selectedFilters.status === 'Unpaid' ? 'selected' : '' %>>Unpaid / Pending</option>
+                <option value="Paid" <%= selectedFilters.status === 'Paid' ? 'selected' : '' %>>Paid</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.25rem;">
+                <i class="fa-solid fa-filter"></i> Filter
+              </button>
+              <a href="/admin/mess-bills" class="btn btn-secondary" style="padding: 0.7rem 1rem;">
+                <i class="fa-solid fa-rotate-left"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Bills Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-file-invoice-dollar" style="color: var(--primary);"></i>
+            Generated Mess Statements (<%= bills.length %>)
+          </h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <% if (bills.length === 0) { %>
+            <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+              <i class="fa-solid fa-file-invoice" style="font-size: 3rem; margin-bottom: 1rem; color: #cbd5e1;"></i>
+              <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem;">No Invoices Generated</h4>
+              <p style="font-size: 0.88rem;">Click "Run Monthly Bill Generator" above to process student mess charges.</p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student Details</th>
+                    <th>Billing Cycle</th>
+                    <th>Attendance Breakdown</th>
+                    <th>Base Amount</th>
+                    <th>Rebate Deducted</th>
+                    <th>Net Payable</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% bills.forEach(bill => { %>
+                    <tr>
+                      <td>
+                        <strong style="color: var(--text-primary);"><%= bill.student ? bill.student.name : 'Unknown' %></strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);"><%= bill.student ? bill.student.rollNo + ' &bull; ' + bill.student.department : '' %></div>
+                      </td>
+                      <td>
+                        <strong><%= bill.month %> <%= bill.year %></strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);"><%= bill.totalDaysInMonth %> Days Cycle</div>
+                      </td>
+                      <td>
+                        <span style="color: var(--success-text); font-weight: 700;"><%= bill.presentDays %> Present</span> / 
+                        <span style="color: var(--danger-text); font-weight: 600;"><%= bill.absentDays %> Absent</span>
+                      </td>
+                      <td><%= formatINR(bill.baseAmount) %></td>
+                      <td style="color: var(--success-text); font-weight: 700;">-<%= formatINR(bill.rebateAmount) %></td>
+                      <td>
+                        <strong style="color: var(--primary); font-size: 1.05rem;"><%= formatINR(bill.netAmount) %></strong>
+                      </td>
+                      <td style="font-size: 0.85rem;"><%= formatDate(bill.dueDate) %></td>
+                      <td>
+                        <span class="badge <%= getStatusBadgeClass(bill.status) %>"><%= bill.status %></span>
+                      </td>
+                      <td>
+                        <form action="/admin/mess-bills/<%= bill._id %>/status" method="POST" style="margin: 0;">
+                          <% if (bill.status === 'Unpaid') { %>
+                            <input type="hidden" name="status" value="Paid">
+                            <button type="submit" class="btn btn-success btn-sm" style="padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                              <i class="fa-solid fa-check"></i> Mark Paid
+                            </button>
+                          <% } else { %>
+                            <input type="hidden" name="status" value="Unpaid">
+                            <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                              <i class="fa-solid fa-rotate-left"></i> Mark Unpaid
+                            </button>
+                          <% } %>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Run Monthly Bill Generator -->
+<div class="modal-overlay" id="generateBillModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Generate Monthly Mess Bills</h3>
+      <button type="button" class="modal-close" data-modal-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+        This automated engine calculates charges for each student based on the number of days present, automatically crediting approved absence leave rebates.
+      </p>
+
+      <form action="/admin/mess-bills/generate" method="POST">
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="genMonth">Billing Month *</label>
+            <select name="month" id="genMonth" class="form-select" required>
+              <% ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].forEach(m => { %>
+                <option value="<%= m %>" <%= m === 'September' ? 'selected' : '' %>><%= m %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="genYear">Year *</label>
+            <input type="number" name="year" id="genYear" class="form-control" value="2026" required>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label" for="genDays">Days in Month *</label>
+            <input type="number" name="totalDaysInMonth" id="genDays" class="form-control" value="30" min="28" max="31" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="genRate">Daily Rate (₹) *</label>
+            <input type="number" name="dailyRate" id="genRate" class="form-control" value="150" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="genUtility">Kitchen Utility (₹)</label>
+            <input type="number" name="utilityCharge" id="genUtility" class="form-control" value="250" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="studentOption">Target Audience</label>
+          <select name="studentOption" id="studentOption" class="form-select">
+            <option value="all">All Enrolled Students (Batch Run)</option>
+            <option value="single">Single Selected Student</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="singleStudentSelectGroup" style="display: none;">
+          <label class="form-label" for="singleStudentId">Select Student</label>
+          <select name="singleStudentId" id="singleStudentId" class="form-select">
+            <% students.forEach(s => { %>
+              <option value="<%= s._id %>"><%= s.name %> (<%= s.rollNo %> - <%= s.department %>)</option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-play"></i> Generate & Calculate Bills
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('studentOption').addEventListener('change', function() {
+    const singleGroup = document.getElementById('singleStudentSelectGroup');
+    if (this.value === 'single') {
+      singleGroup.style.display = 'block';
+    } else {
+      singleGroup.style.display = 'none';
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>

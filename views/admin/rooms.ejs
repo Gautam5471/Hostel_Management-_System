@@ -1,0 +1,323 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Rooms & Capacity Management' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Top Actions & Filter Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Hostel Rooms Directory</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+            Configure room capacities, assign amenities, and manage bed allocations.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-primary" data-modal-target="addRoomModal">
+          <i class="fa-solid fa-plus"></i> Add New Room
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="card" style="margin-bottom: 1.75rem;">
+        <div class="card-body" style="padding: 1.25rem 1.5rem;">
+          <form method="GET" action="/admin/rooms" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+            <div style="flex: 1; min-width: 180px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Hostel Block</label>
+              <select name="block" class="form-select">
+                <option value="all">All Blocks</option>
+                <% blocks.forEach(b => { %>
+                  <option value="<%= b._id %>" <%= selectedFilters.block == b._id.toString() ? 'selected' : '' %>><%= b.name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 160px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Room Type</label>
+              <select name="type" class="form-select">
+                <option value="all">All Types</option>
+                <option value="Single" <%= selectedFilters.type === 'Single' ? 'selected' : '' %>>Single</option>
+                <option value="Double" <%= selectedFilters.type === 'Double' ? 'selected' : '' %>>Double</option>
+                <option value="Triple" <%= selectedFilters.type === 'Triple' ? 'selected' : '' %>>Triple</option>
+                <option value="Four-Bed" <%= selectedFilters.type === 'Four-Bed' ? 'selected' : '' %>>Four-Bed</option>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 140px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Status</label>
+              <select name="status" class="form-select">
+                <option value="all">All Statuses</option>
+                <option value="Available" <%= selectedFilters.status === 'Available' ? 'selected' : '' %>>Available</option>
+                <option value="Full" <%= selectedFilters.status === 'Full' ? 'selected' : '' %>>Full</option>
+                <option value="Maintenance" <%= selectedFilters.status === 'Maintenance' ? 'selected' : '' %>>Under Maintenance</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.25rem;">
+                <i class="fa-solid fa-filter"></i> Filter
+              </button>
+              <a href="/admin/rooms" class="btn btn-secondary" style="padding: 0.7rem 1rem;">
+                <i class="fa-solid fa-rotate-left"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Rooms Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-bed" style="color: var(--primary);"></i>
+            Rooms & Bed Occupancy (<%= rooms.length %>)
+          </h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Room #</th>
+                  <th>Block / Floor</th>
+                  <th>Type & Price</th>
+                  <th>Bed Capacity</th>
+                  <th>Current Occupants</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% rooms.forEach(room => { %>
+                  <tr>
+                    <td>
+                      <strong style="color: var(--text-primary); font-size: 1rem;">
+                        <%= room.roomNumber %>
+                      </strong>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        <%= room.isAc ? '❄️ AC' : 'Non-AC' %> &bull; <%= room.hasAttachedBathroom ? 'Attached Bath' : 'Common' %>
+                      </div>
+                    </td>
+                    <td>
+                      <strong><%= room.block ? room.block.name : 'N/A' %></strong>
+                      <div style="font-size: 0.78rem; color: var(--text-muted);">Floor <%= room.floor %></div>
+                    </td>
+                    <td>
+                      <div style="font-weight: 600;"><%= room.roomType %></div>
+                      <div style="font-size: 0.8rem; color: var(--primary); font-weight: 700;"><%= formatINR(room.pricePerMonth) %>/mo</div>
+                    </td>
+                    <td style="min-width: 140px;">
+                      <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.2rem;">
+                        <strong><%= room.occupiedBeds %> / <%= room.capacity %> Beds</strong>
+                      </div>
+                      <div class="progress-bar-container" style="margin: 0;">
+                        <div class="progress-bar <%= room.occupiedBeds >= room.capacity ? 'rose' : (room.occupiedBeds > 0 ? 'amber' : 'emerald') %>" 
+                             style="width: <%= (room.occupiedBeds / room.capacity) * 100 %>%;"></div>
+                      </div>
+                    </td>
+                    <td>
+                      <% if (room.occupants && room.occupants.length > 0) { %>
+                        <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                          <% room.occupants.forEach(occ => { %>
+                            <span style="font-size: 0.8rem; color: var(--text-primary);">
+                              &bull; <strong><%= occ.name %></strong> (<%= occ.rollNo %>)
+                            </span>
+                          <% }) %>
+                        </div>
+                      <% } else { %>
+                        <span style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">No occupants (Vacant)</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="badge <%= getStatusBadgeClass(room.status) %>"><%= room.status %></span>
+                    </td>
+                    <td>
+                      <div style="display: flex; gap: 0.4rem;">
+                        <button type="button" class="btn btn-secondary btn-sm" data-modal-target="editRoomModal-<%= room._id %>" title="Edit Room">
+                          <i class="fa-solid fa-pen"></i>
+                        </button>
+
+                        <form action="/admin/rooms/<%= room._id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete Room <%= room.roomNumber %>?');" style="margin: 0;">
+                          <button type="submit" class="btn btn-danger btn-sm" <%= room.occupiedBeds > 0 ? 'disabled style="opacity:0.4;"' : '' %> title="Delete Room">
+                            <i class="fa-solid fa-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Modal: Edit Room -->
+                  <div class="modal-overlay" id="editRoomModal-<%= room._id %>">
+                    <div class="modal-card">
+                      <div class="modal-header">
+                        <h3 style="font-size: 1.2rem; font-weight: 700; margin: 0;">Edit Room <%= room.roomNumber %></h3>
+                        <button type="button" class="modal-close" data-modal-close>&times;</button>
+                      </div>
+                      <div class="modal-body">
+                        <form action="/admin/rooms/<%= room._id %>/edit" method="POST">
+                          <div class="form-grid-2">
+                            <div class="form-group">
+                              <label class="form-label" for="roomNumber-<%= room._id %>">Room Number *</label>
+                              <input type="text" name="roomNumber" id="roomNumber-<%= room._id %>" class="form-control" value="<%= room.roomNumber %>" required>
+                            </div>
+
+                            <div class="form-group">
+                              <label class="form-label" for="floor-<%= room._id %>">Floor *</label>
+                              <input type="number" name="floor" id="floor-<%= room._id %>" class="form-control" value="<%= room.floor %>" min="0" required>
+                            </div>
+                          </div>
+
+                          <div class="form-grid-3">
+                            <div class="form-group">
+                              <label class="form-label" for="roomType-<%= room._id %>">Room Type *</label>
+                              <select name="roomType" id="roomType-<%= room._id %>" class="form-select" required>
+                                <option value="Single" <%= room.roomType === 'Single' ? 'selected' : '' %>>Single</option>
+                                <option value="Double" <%= room.roomType === 'Double' ? 'selected' : '' %>>Double</option>
+                                <option value="Triple" <%= room.roomType === 'Triple' ? 'selected' : '' %>>Triple</option>
+                                <option value="Four-Bed" <%= room.roomType === 'Four-Bed' ? 'selected' : '' %>>Four-Bed</option>
+                              </select>
+                            </div>
+
+                            <div class="form-group">
+                              <label class="form-label" for="capacity-<%= room._id %>">Total Capacity *</label>
+                              <input type="number" name="capacity" id="capacity-<%= room._id %>" class="form-control" value="<%= room.capacity %>" min="1" required>
+                            </div>
+
+                            <div class="form-group">
+                              <label class="form-label" for="price-<%= room._id %>">Rent / Month (₹)</label>
+                              <input type="number" name="pricePerMonth" id="price-<%= room._id %>" class="form-control" value="<%= room.pricePerMonth %>" required>
+                            </div>
+                          </div>
+
+                          <div class="form-grid-2" style="margin-bottom: 1rem;">
+                            <label class="form-check">
+                              <input type="checkbox" name="isAc" <%= room.isAc ? 'checked' : '' %>>
+                              <span style="font-size: 0.88rem; font-weight: 600;">Air Conditioned (AC)</span>
+                            </label>
+
+                            <label class="form-check">
+                              <input type="checkbox" name="hasAttachedBathroom" <%= room.hasAttachedBathroom ? 'checked' : '' %>>
+                              <span style="font-size: 0.88rem; font-weight: 600;">Attached Bathroom</span>
+                            </label>
+                          </div>
+
+                          <div class="form-group">
+                            <label class="form-label" for="status-<%= room._id %>">Operational Status</label>
+                            <select name="status" id="status-<%= room._id %>" class="form-select">
+                              <option value="Available" <%= room.status === 'Available' ? 'selected' : '' %>>Available</option>
+                              <option value="Full" <%= room.status === 'Full' ? 'selected' : '' %>>Full</option>
+                              <option value="Maintenance" <%= room.status === 'Maintenance' ? 'selected' : '' %>>Under Maintenance</option>
+                            </select>
+                          </div>
+
+                          <div class="form-group">
+                            <label class="form-label" for="amenities-<%= room._id %>">Amenities (comma-separated)</label>
+                            <input type="text" name="amenities" id="amenities-<%= room._id %>" class="form-control" value="<%= room.amenities ? room.amenities.join(', ') : '' %>">
+                          </div>
+
+                          <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                            <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add New Room -->
+<div class="modal-overlay" id="addRoomModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Add New Hostel Room</h3>
+      <button type="button" class="modal-close" data-modal-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <form action="/admin/rooms" method="POST">
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="newRoomBlock">Hostel Block *</label>
+            <select name="block" id="newRoomBlock" class="form-select" required>
+              <% blocks.forEach(b => { %>
+                <option value="<%= b._id %>"><%= b.name %> (<%= b.genderType %>)</option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newRoomNumber">Room Number *</label>
+            <input type="text" name="roomNumber" id="newRoomNumber" class="form-control" placeholder="e.g. A-101, B-205" required>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label" for="newRoomFloor">Floor *</label>
+            <input type="number" name="floor" id="newRoomFloor" class="form-control" value="1" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newRoomType">Room Type *</label>
+            <select name="roomType" id="newRoomType" class="form-select" required>
+              <option value="Single">Single</option>
+              <option value="Double" selected>Double</option>
+              <option value="Triple">Triple</option>
+              <option value="Four-Bed">Four-Bed</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newRoomCapacity">Capacity (Beds) *</label>
+            <input type="number" name="capacity" id="newRoomCapacity" class="form-control" value="2" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newRoomPrice">Monthly Rent / Fee (₹) *</label>
+          <input type="number" name="pricePerMonth" id="newRoomPrice" class="form-control" value="6000" required>
+        </div>
+
+        <div class="form-grid-2" style="margin-bottom: 1rem;">
+          <label class="form-check">
+            <input type="checkbox" name="isAc">
+            <span style="font-size: 0.88rem; font-weight: 600;">Air Conditioned (AC)</span>
+          </label>
+
+          <label class="form-check">
+            <input type="checkbox" name="hasAttachedBathroom" checked>
+            <span style="font-size: 0.88rem; font-weight: 600;">Attached Bathroom</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newRoomAmenities">Amenities (comma-separated)</label>
+          <input type="text" name="amenities" id="newRoomAmenities" class="form-control" value="High-speed Wi-Fi, Study Table & Chair, Wardrobe, Ceiling Fan">
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Create Room
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

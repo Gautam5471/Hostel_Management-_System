@@ -1,0 +1,198 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Hostel Blocks & Buildings' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Header & Action -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Hostel Blocks Management</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+            Create and manage hostel buildings, floors, and warden contact assignments.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-primary" data-modal-target="addBlockModal">
+          <i class="fa-solid fa-plus"></i> Add New Block
+        </button>
+      </div>
+
+      <!-- Blocks Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+        <% blocks.forEach(block => { %>
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-header" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #ffffff;">
+              <div>
+                <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 800; margin: 0;"><%= block.name %></h3>
+                <span style="font-size: 0.78rem; color: #94a3b8;"><%= block.genderType %> Residence &bull; <%= block.totalFloors %> Floors</span>
+              </div>
+              <span class="badge badge-info"><%= block.genderType %></span>
+            </div>
+
+            <div class="card-body">
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.5;">
+                <%= block.description %>
+              </p>
+
+              <!-- Capacity & Occupancy -->
+              <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.35rem;">
+                  <span>Bed Occupancy</span>
+                  <strong><%= block.occupiedBeds %> / <%= block.totalBeds %> Beds</strong>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar primary" style="width: <%= block.totalBeds > 0 ? (block.occupiedBeds / block.totalBeds) * 100 : 0 %>%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem;">
+                  <span><%= block.roomCount %> Rooms</span>
+                  <span style="color: var(--success-text); font-weight: 700;"><%= block.availableBeds %> Available Beds</span>
+                </div>
+              </div>
+
+              <!-- Warden Info -->
+              <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.3rem;">
+                <div><i class="fa-solid fa-user-shield" style="width: 18px; color: var(--primary);"></i> <strong>Warden:</strong> <%= block.wardenInCharge %></div>
+                <div><i class="fa-solid fa-phone" style="width: 18px; color: var(--primary);"></i> <strong>Contact:</strong> <%= block.contactNumber %></div>
+              </div>
+            </div>
+
+            <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
+              <button type="button" class="btn btn-secondary btn-sm" data-modal-target="editBlockModal-<%= block._id %>">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </button>
+
+              <form action="/admin/blocks/<%= block._id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this block? It must contain 0 rooms.');" style="margin: 0;">
+                <button type="submit" class="btn btn-danger btn-sm" <%= block.roomCount > 0 ? 'disabled style="opacity:0.5;"' : '' %>>
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Modal: Edit Block -->
+          <div class="modal-overlay" id="editBlockModal-<%= block._id %>">
+            <div class="modal-card">
+              <div class="modal-header">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Edit Hostel Block</h3>
+                <button type="button" class="modal-close" data-modal-close>&times;</button>
+              </div>
+              <div class="modal-body">
+                <form action="/admin/blocks/<%= block._id %>/edit" method="POST">
+                  <div class="form-group">
+                    <label class="form-label" for="name-<%= block._id %>">Block Name *</label>
+                    <input type="text" name="name" id="name-<%= block._id %>" class="form-control" value="<%= block.name %>" required>
+                  </div>
+
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label class="form-label" for="genderType-<%= block._id %>">Residence Type *</label>
+                      <select name="genderType" id="genderType-<%= block._id %>" class="form-select" required>
+                        <option value="Boys" <%= block.genderType === 'Boys' ? 'selected' : '' %>>Boys</option>
+                        <option value="Girls" <%= block.genderType === 'Girls' ? 'selected' : '' %>>Girls</option>
+                        <option value="Co-ed" <%= block.genderType === 'Co-ed' ? 'selected' : '' %>>Co-ed / International</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="totalFloors-<%= block._id %>">Total Floors *</label>
+                      <input type="number" name="totalFloors" id="totalFloors-<%= block._id %>" class="form-control" value="<%= block.totalFloors %>" min="1" required>
+                    </div>
+                  </div>
+
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label class="form-label" for="warden-<%= block._id %>">Warden in Charge</label>
+                      <input type="text" name="wardenInCharge" id="warden-<%= block._id %>" class="form-control" value="<%= block.wardenInCharge %>">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="contact-<%= block._id %>">Emergency Contact</label>
+                      <input type="text" name="contactNumber" id="contact-<%= block._id %>" class="form-control" value="<%= block.contactNumber %>">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="desc-<%= block._id %>">Description</label>
+                    <textarea name="description" id="desc-<%= block._id %>" rows="2" class="form-control"><%= block.description %></textarea>
+                  </div>
+
+                  <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add New Block -->
+<div class="modal-overlay" id="addBlockModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Add New Hostel Block</h3>
+      <button type="button" class="modal-close" data-modal-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <form action="/admin/blocks" method="POST">
+        <div class="form-group">
+          <label class="form-label" for="newBlockName">Block Name *</label>
+          <input type="text" name="name" id="newBlockName" class="form-control" placeholder="e.g. Block D - Cauvery Wing" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="newGenderType">Residence Type *</label>
+            <select name="genderType" id="newGenderType" class="form-select" required>
+              <option value="Boys">Boys</option>
+              <option value="Girls">Girls</option>
+              <option value="Co-ed">Co-ed / PG</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newTotalFloors">Total Floors *</label>
+            <input type="number" name="totalFloors" id="newTotalFloors" class="form-control" value="3" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="newWarden">Warden Name</label>
+            <input type="text" name="wardenInCharge" id="newWarden" class="form-control" placeholder="Prof. S. Verma">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newContact">Emergency Phone</label>
+            <input type="text" name="contactNumber" id="newContact" class="form-control" placeholder="+91 98765 43210">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newDesc">Description</label>
+          <textarea name="description" id="newDesc" rows="2" class="form-control" placeholder="Amenities, solar water heaters, study lounges..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Create Block
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,35 @@
+{
+  "name": "hostel-mess-management-system",
+  "version": "1.0.0",
+  "description": "Hostel Room Allotment & Mess Management System (Node.js, Express, EJS, MongoDB Atlas)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed/seedData.js"
+  },
+  "keywords": [
+    "hostel",
+    "allotment",
+    "mess",
+    "management",
+    "express",
+    "ejs",
+    "mongodb"
+  ],
+  "author": "Campus Systems",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-flash": "^0.1.1",
+    "connect-mongo": "^5.1.0",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "method-override": "^3.0.0",
+    "mongodb-memory-server": "^11.2.0",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0"
+  }
+}

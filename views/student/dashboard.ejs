@@ -1,0 +1,282 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Student Dashboard' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Top Welcome Banner -->
+      <div style="background: linear-gradient(135deg, var(--slate-900), #1e3a8a); border-radius: var(--radius-lg); padding: 2rem 2.25rem; color: #ffffff; margin-bottom: 2rem; position: relative; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid rgba(255, 255, 255, 0.1);">
+        <div style="position: relative; z-index: 2; max-width: 720px;">
+          <span style="background: rgba(37, 99, 235, 0.25); border: 1px solid rgba(96, 165, 250, 0.35); padding: 0.25rem 0.85rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; margin-bottom: 0.75rem; color: #bfdbfe;">
+            Academic Year 2026–2027
+          </span>
+          <h2 style="color: #ffffff; font-size: 1.85rem; font-weight: 800; margin-bottom: 0.4rem;">
+            Welcome, <%= currentUser.name %>
+          </h2>
+          <p style="color: #cbd5e1; font-size: 0.95rem; line-height: 1.6;">
+            Manage your hostel room allotment, submit maintenance tickets, check weekly dining schedules, and track monthly mess bill statements.
+          </p>
+        </div>
+        <div style="position: absolute; right: 2rem; bottom: -20px; font-size: 8rem; color: rgba(255, 255, 255, 0.04); pointer-events: none;">
+          <i class="fa-solid fa-hotel"></i>
+        </div>
+      </div>
+
+      <!-- Quick KPI Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon <%= activeAllotment ? 'emerald' : 'amber' %>">
+            <i class="fa-solid fa-bed"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= activeAllotment ? activeAllotment.room.roomNumber : 'No Room' %></h3>
+            <p>Room Status</p>
+            <span class="stat-subtext">
+              <%= activeAllotment ? activeAllotment.room.block.name + ' (Bed #' + activeAllotment.bedNumber + ')' : 'Click to Browse Rooms' %>
+            </span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon indigo">
+            <i class="fa-solid fa-clipboard-question"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.pendingRequestsCount %></h3>
+            <p>Pending Requests</p>
+            <span class="stat-subtext">Allotment / Transfer</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon amber">
+            <i class="fa-solid fa-wrench"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.activeTicketsCount %></h3>
+            <p>Active Tickets</p>
+            <span class="stat-subtext">Maintenance Complaints</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon <%= latestBill && latestBill.status === 'Unpaid' ? 'rose' : 'emerald' %>">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= latestBill ? formatINR(latestBill.netAmount) : '₹0' %></h3>
+            <p>Mess Bill (<%= latestBill ? latestBill.month : 'Current' %>)</p>
+            <span class="stat-subtext">Status: <%= latestBill ? latestBill.status : 'No Dues' %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-Column Section: Room Living & Dining Schedule -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.75rem; margin-bottom: 2rem;">
+        
+        <!-- Left: Current Allotment Card -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-door-open" style="color: var(--primary);"></i>
+              My Room Allotment
+            </h3>
+            <% if (activeAllotment) { %>
+              <a href="/student/my-room" class="btn btn-outline-primary btn-sm">View Details</a>
+            <% } else { %>
+              <a href="/student/rooms" class="btn btn-primary btn-sm">Apply for Room</a>
+            <% } %>
+          </div>
+          <div class="card-body">
+            <% if (activeAllotment) { %>
+              <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <div>
+                    <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--primary); margin: 0;">
+                      Room <%= activeAllotment.room.roomNumber %>
+                    </h3>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">
+                      <%= activeAllotment.room.block.name %> &bull; Floor <%= activeAllotment.room.floor %>
+                    </span>
+                  </div>
+                  <span class="badge badge-success">Bed #<%= activeAllotment.bedNumber %> Allotted</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+                  <div><strong>Type:</strong> <%= activeAllotment.room.roomType %> (<%= activeAllotment.room.isAc ? 'AC' : 'Non-AC' %>)</div>
+                  <div><strong>Monthly Rent:</strong> <%= formatINR(activeAllotment.room.pricePerMonth) %></div>
+                  <div><strong>Allotted On:</strong> <%= formatDate(activeAllotment.allottedDate) %></div>
+                  <div><strong>Warden Contact:</strong> <%= activeAllotment.room.block.contactNumber %></div>
+                </div>
+              </div>
+
+              <!-- Roommates Directory -->
+              <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.65rem; color: var(--text-primary);">
+                Roommates (<%= roommates.length %>)
+              </h4>
+              <% if (roommates.length > 0) { %>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <% roommates.forEach(mate => { %>
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid var(--border-color); padding: 0.65rem 0.85rem; border-radius: var(--radius-sm);">
+                      <div style="display: flex; align-items: center; gap: 0.65rem;">
+                        <div style="width: 30px; height: 30px; border-radius: var(--radius-sm); background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem;">
+                          <%= mate.name.charAt(0) %>
+                        </div>
+                        <div>
+                          <strong style="font-size: 0.88rem;"><%= mate.name %></strong>
+                          <span style="font-size: 0.75rem; color: var(--text-muted); display: block;"><%= mate.department %> (<%= mate.rollNo %>)</span>
+                        </div>
+                      </div>
+                      <a href="tel:<%= mate.phone %>" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem;">
+                        <i class="fa-solid fa-phone"></i>
+                      </a>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">No other roommates currently assigned to this room.</p>
+              <% } %>
+
+            <% } else { %>
+              <div style="text-align: center; padding: 2.25rem 1rem;">
+                <div style="font-size: 3rem; color: var(--slate-300); margin-bottom: 1rem;">
+                  <i class="fa-solid fa-bed"></i>
+                </div>
+                <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">No Active Room Allotment</h4>
+                <p style="font-size: 0.88rem; color: var(--text-secondary); max-width: 320px; margin: 0 auto 1.5rem;">
+                  You have not been assigned a hostel room yet. Browse available blocks and submit an allotment request.
+                </p>
+                <a href="/student/rooms" class="btn btn-primary">
+                  <i class="fa-solid fa-magnifying-glass-location"></i> Explore Available Rooms
+                </a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Right: Today's Mess Schedule -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-utensils" style="color: var(--warning);"></i>
+              Today's Dining Schedule (<%= currentDay %>)
+            </h3>
+            <a href="/student/mess-menu" class="btn btn-outline-primary btn-sm">Full 7-Day Menu</a>
+          </div>
+          <div class="card-body">
+            <% if (todayMenu && todayMenu.length > 0) { %>
+              <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                <% todayMenu.forEach(meal => { %>
+                  <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.85rem 1rem; background: #ffffff;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                      <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <strong style="font-size: 0.95rem; color: var(--text-primary);"><%= meal.mealType %></strong>
+                        <% if (meal.isSpecial) { %>
+                          <span class="badge badge-warning" style="font-size: 0.68rem;">Chef Special</span>
+                        <% } %>
+                      </div>
+                      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">
+                        <i class="fa-regular fa-clock"></i> <%= meal.timings %>
+                      </span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+                      <%= meal.items.join(', ') %>
+                    </p>
+                  </div>
+                <% }) %>
+              </div>
+              <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem;">
+                <a href="/student/mess-feedback" class="btn btn-secondary btn-sm btn-block">
+                  <i class="fa-solid fa-star" style="color: #f59e0b;"></i> Rate Today's Meal
+                </a>
+                <a href="/student/mess-leave" class="btn btn-secondary btn-sm btn-block">
+                  <i class="fa-solid fa-calendar-minus"></i> Apply Mess Leave
+                </a>
+              </div>
+            <% } else { %>
+              <p style="font-size: 0.88rem; color: var(--text-muted); text-align: center; padding: 2rem 0;">
+                Today's mess menu has not been published yet.
+              </p>
+            <% } %>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Requests & Maintenance Tickets -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Recent Requests & Maintenance Tickets
+          </h3>
+          <a href="/student/maintenance" class="btn btn-secondary btn-sm">View All Tickets</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <% if (recentRequests.length === 0 && activeTickets.length === 0) { %>
+            <p style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+              No pending room requests or maintenance complaints.
+            </p>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Date Raised</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% recentRequests.forEach(reqItem => { %>
+                    <tr>
+                      <td>
+                        <span class="badge badge-info"><%= reqItem.requestType %></span>
+                      </td>
+                      <td>
+                        <strong><%= reqItem.preferredBlock ? reqItem.preferredBlock.name : 'Hostel Request' %></strong>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);"><%= reqItem.reason %></div>
+                      </td>
+                      <td><%= formatDate(reqItem.createdAt) %></td>
+                      <td>
+                        <span class="badge <%= getStatusBadgeClass(reqItem.status) %>"><%= reqItem.status %></span>
+                      </td>
+                      <td style="font-size: 0.85rem; color: var(--text-secondary);"><%= reqItem.adminRemarks || 'Under warden review' %></td>
+                    </tr>
+                  <% }) %>
+
+                  <% activeTickets.forEach(ticket => { %>
+                    <tr>
+                      <td>
+                        <span class="badge badge-warning">Maintenance (<%= ticket.category %>)</span>
+                      </td>
+                      <td>
+                        <strong><%= ticket.title %></strong>
+                        <div style="font-size: 0.78rem; color: var(--text-muted);"><%= ticket.description %></div>
+                      </td>
+                      <td><%= formatDate(ticket.createdAt) %></td>
+                      <td>
+                        <span class="badge <%= getStatusBadgeClass(ticket.status) %>"><%= ticket.status %></span>
+                      </td>
+                      <td style="font-size: 0.85rem; color: var(--text-secondary);"><%= ticket.resolutionNotes || 'Technician Assigned' %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

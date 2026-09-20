@@ -1,0 +1,221 @@
+<%- include('partials/header') %>
+
+<!-- Public Navigation Bar -->
+<header style="background: var(--slate-900); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 1.1rem 2rem; position: sticky; top: 0; z-index: 100;">
+  <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 0.85rem;">
+      <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), #38bdf8); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #fff; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);">
+        <i class="fa-solid fa-hotel"></i>
+      </div>
+      <div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.01em;">HostelHub</h2>
+        <span style="font-size: 0.72rem; color: var(--slate-400); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;">Campus Facility & Dining Administration</span>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <% if (currentUser) { %>
+        <a href="<%= currentUser.role === 'admin' || currentUser.role === 'warden' ? '/admin/dashboard' : '/student/dashboard' %>" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-gauge-high"></i> Open Dashboard
+        </a>
+      <% } else { %>
+        <a href="/auth/login" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.08); color: #ffffff; border: 1px solid rgba(255,255,255,0.15);">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </a>
+        <a href="/auth/register" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-user-plus"></i> Student Register
+        </a>
+      <% } %>
+    </div>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-glow"></div>
+  <div class="container" style="position: relative; z-index: 2;">
+    <span style="background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(96, 165, 250, 0.4); color: #bfdbfe; padding: 0.35rem 1rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-flex; align-items: center; gap: 0.45rem; margin-bottom: 1.5rem;">
+      <i class="fa-solid fa-building-columns"></i> Institutional Facility Platform
+    </span>
+    
+    <h1 class="hero-title">
+      Campus Hostel Room Allotment & <br>
+      <span class="hero-gradient-text">Mess Management System</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      A centralized university platform for streamlined hostel room allocations, capacity enforcement, student room-change workflows, maintenance tickets, and automated attendance-based mess billing.
+    </p>
+
+    <div class="hero-btn-group">
+      <a href="/auth/login" class="btn btn-primary btn-lg">
+        <i class="fa-solid fa-shield-halved"></i> Access Portal
+      </a>
+      <a href="/auth/demo-login/admin" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2);">
+        <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Warden Demo
+      </a>
+      <a href="/auth/demo-login/student" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2);">
+        <i class="fa-solid fa-user-graduate" style="color: #60a5fa;"></i> Student Demo
+      </a>
+    </div>
+
+    <!-- Live Campus Counter Stats Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; max-width: 950px; margin: 4rem auto 0; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-xl); padding: 2rem;">
+      <div style="text-align: center;">
+        <div style="font-size: 2.5rem; font-weight: 800; color: #ffffff;"><%= stats.totalBlocks %></div>
+        <div style="font-size: 0.8rem; color: var(--slate-400); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Hostel Blocks</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 2.5rem; font-weight: 800; color: #93c5fd;"><%= stats.totalRooms %></div>
+        <div style="font-size: 0.8rem; color: var(--slate-400); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Total Rooms</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 2.5rem; font-weight: 800; color: #38bdf8;"><%= stats.totalBeds %></div>
+        <div style="font-size: 0.8rem; color: var(--slate-400); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Bed Capacity</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 2.5rem; font-weight: 800; color: #34d399;"><%= stats.availableBeds %></div>
+        <div style="font-size: 0.8rem; color: var(--slate-400); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Available Beds</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Core Enterprise Features Grid -->
+<section style="padding: 5.5rem 1.5rem; background: var(--bg-main);">
+  <div class="container">
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 3.5rem;">
+      <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.75rem;">
+        Complete Institutional Management Suite
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 1.05rem;">
+        Designed to streamline facility administration while providing students with intuitive self-service capabilities.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.75rem;">
+      
+      <!-- Feature 1 -->
+      <div class="card" style="margin-bottom: 0; padding: 2rem; border-radius: var(--radius-lg);">
+        <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.25rem;">
+          <i class="fa-solid fa-bed"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.55rem;">Smart Room Allotment Engine</h3>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;">
+          Filter by Block, Room Type (Single/Double/Triple/Four-Bed), and AC options. Automated validation prevents allocation beyond bed capacity and frees beds on checkout.
+        </p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="card" style="margin-bottom: 0; padding: 2rem; border-radius: var(--radius-lg);">
+        <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: var(--warning-light); color: var(--warning); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.25rem;">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.55rem;">7-Day Mess Menu & Feedback</h3>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;">
+          Publish interactive weekly menus for Breakfast, Lunch, Evening Snacks, and Dinner. Students submit verified 5-star ratings and category reviews.
+        </p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="card" style="margin-bottom: 0; padding: 2rem; border-radius: var(--radius-lg);">
+        <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.25rem;">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.55rem;">Attendance Mess Billing (Stretch Goal)</h3>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;">
+          Automated monthly billing engine calculated on days present. Students log leave absences to receive automatic <strong>₹150/day</strong> rebate credit with printable invoices.
+        </p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="card" style="margin-bottom: 0; padding: 2rem; border-radius: var(--radius-lg);">
+        <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: var(--danger-light); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.25rem;">
+          <i class="fa-solid fa-screwdriver-wrench"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.55rem;">Facility Maintenance Helpdesk</h3>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;">
+          Students lodge tickets categorized by Electrical, Plumbing, Carpentry, or Wi-Fi. Wardens assign technicians and track resolution turnaround times.
+        </p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="card" style="margin-bottom: 0; padding: 2rem; border-radius: var(--radius-lg);">
+        <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.25rem;">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.55rem;">Room Transfer & Vacate Workflow</h3>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;">
+          End-to-end approval workflows for mid-semester room transfers and formal vacation clearances, keeping occupancy records accurate in real time.
+        </p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="card" style="margin-bottom: 0; padding: 2rem; border-radius: var(--radius-lg);">
+        <div style="width: 52px; height: 52px; border-radius: var(--radius-md); background: #f1f5f9; color: var(--slate-700); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.25rem;">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.55rem;">Real-Time Administrative Analytics</h3>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;">
+          Visual Chart.js breakdown of total vs occupied beds, block-wise utilization percentages, and dining quality satisfaction metrics.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Today's Mess Teaser Section -->
+<% if (todayMenu && todayMenu.length > 0) { %>
+<section style="padding: 4.5rem 1.5rem; background: #ffffff; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span class="badge badge-warning" style="margin-bottom: 0.4rem;">Institutional Dining Hall</span>
+        <h2 style="font-size: 1.85rem; font-weight: 800; margin: 0;">Today's Published Menu (<%= currentDay %>)</h2>
+      </div>
+      <a href="/auth/login" class="btn btn-outline-primary btn-sm">Sign in for Full Weekly Plan</a>
+    </div>
+
+    <div class="meal-cards-grid">
+      <% todayMenu.forEach(meal => { %>
+        <div class="meal-card">
+          <div class="meal-card-header">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0;"><%= meal.mealType %></h3>
+              <span class="meal-time-tag"><i class="fa-regular fa-clock"></i> <%= meal.timings %></span>
+            </div>
+            <% if (meal.isSpecial) { %>
+              <span class="badge badge-warning">Chef Special</span>
+            <% } else { %>
+              <span class="badge badge-success"><%= meal.dietaryType %></span>
+            <% } %>
+          </div>
+          <ul class="meal-items-list">
+            <% meal.items.forEach(food => { %>
+              <li><%= food %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- Footer -->
+<footer style="background: var(--slate-900); color: var(--slate-400); padding: 3.5rem 1.5rem 2rem; border-top: 1px solid rgba(255,255,255,0.08);">
+  <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+    <div>
+      <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 800; margin-bottom: 0.25rem;">HostelHub</h3>
+      <p style="font-size: 0.85rem; color: var(--slate-500); margin: 0;">Campus Residential & Dining Facility Management Platform</p>
+    </div>
+
+    <div style="font-size: 0.85rem; color: var(--slate-500);">
+      Node.js &bull; Express.js &bull; EJS &bull; MongoDB Atlas
+    </div>
+  </div>
+</footer>
+
+<%- include('partials/footer') %>

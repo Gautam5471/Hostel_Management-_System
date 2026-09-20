@@ -1,0 +1,134 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Publish & Manage Weekly Mess Menu' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Weekly Dining Schedule Editor</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+            Update daily meal slots, timings, dietary types, and highlight special feast days.
+          </p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem;">
+        
+        <!-- Menu Editor Form -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i>
+              Publish / Edit Meal Slot
+            </h3>
+          </div>
+          <div class="card-body">
+            <form action="/admin/mess-menu" method="POST">
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="dayOfWeek">Day of Week *</label>
+                  <select name="dayOfWeek" id="dayOfWeek" class="form-select" required>
+                    <% days.forEach(d => { %>
+                      <option value="<%= d %>"><%= d %></option>
+                    <% }) %>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="mealType">Meal Slot *</label>
+                  <select name="mealType" id="mealType" class="form-select" required>
+                    <% meals.forEach(m => { %>
+                      <option value="<%= m %>"><%= m %></option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="timings">Serving Timings *</label>
+                  <input type="text" name="timings" id="timings" class="form-control" placeholder="e.g. 07:30 AM - 09:30 AM" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="dietaryType">Dietary Type</label>
+                  <select name="dietaryType" id="dietaryType" class="form-select">
+                    <option value="Pure Veg">Pure Veg</option>
+                    <option value="Non-Veg Option Available">Non-Veg Option Available</option>
+                    <option value="Special Feast">Special Feast</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="items">Food Items (comma-separated) *</label>
+                <textarea name="items" id="items" rows="3" class="form-control" placeholder="e.g. Paneer Butter Masala, Dal Makhani, Steamed Rice, Tandoori Roti, Gulab Jamun" required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="nutritionHighlight">Nutritional / Allergy Note</label>
+                <input type="text" name="nutritionHighlight" id="nutritionHighlight" class="form-control" placeholder="e.g. High Protein / Contains dairy">
+              </div>
+
+              <div class="form-group">
+                <label class="form-check">
+                  <input type="checkbox" name="isSpecial">
+                  <span style="font-size: 0.88rem; font-weight: 600;">Tag as Chef Special / Feast</span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Publish to Students
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Currently Published Menu Overview -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-utensils" style="color: #f59e0b;"></i>
+              Published Schedule Items (<%= menuItems.length %>)
+            </h3>
+          </div>
+          <div class="card-body" style="padding: 0; max-height: 520px; overflow-y: auto;">
+            <% if (menuItems.length === 0) { %>
+              <p style="text-align: center; padding: 3rem; color: var(--text-muted);">No meals published yet.</p>
+            <% } else { %>
+              <div style="display: flex; flex-direction: column;">
+                <% menuItems.forEach(item => { %>
+                  <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                      <div>
+                        <strong style="color: var(--primary);"><%= item.dayOfWeek %> &bull; <%= item.mealType %></strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 0.35rem;"><%= item.timings %></span>
+                      </div>
+                      <span class="badge <%= item.isSpecial ? 'badge-warning' : 'badge-secondary' %>" style="font-size: 0.7rem;">
+                        <%= item.dietaryType %>
+                      </span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0;">
+                      <%= item.items.join(', ') %>
+                    </p>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

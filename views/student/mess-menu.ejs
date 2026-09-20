@@ -1,0 +1,124 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Weekly Hostel Mess Menu' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Top Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Weekly Dining Schedule</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+            Explore daily meals, special feast days, and nutritional info.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <a href="/student/mess-feedback" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-star" style="color: #f59e0b;"></i> Submit Meal Feedback
+          </a>
+          <a href="/student/mess-leave" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-calendar-minus"></i> Apply Mess Leave
+          </a>
+        </div>
+      </div>
+
+      <!-- Day Selection Tabs -->
+      <div class="day-tabs">
+        <% days.forEach(d => { %>
+          <button type="button" class="day-tab-btn <%= d === currentDayName ? 'active' : '' %>" data-day="<%= d %>">
+            <%= d %> <%= d === currentDayName ? '• Today' : '' %>
+          </button>
+        <% }) %>
+      </div>
+
+      <!-- Day Panels -->
+      <% days.forEach(d => { %>
+        <div class="day-menu-panel meal-cards-grid" data-day="<%= d %>" style="<%= d === currentDayName ? 'display: grid;' : 'display: none;' %>">
+          <% const dayMeals = menuByDay[d] || []; %>
+          <% if (dayMeals.length === 0) { %>
+            <div style="grid-column: 1 / -1; background: #ffffff; padding: 3rem; text-align: center; border-radius: var(--radius-lg); border: 1px solid var(--border-color); color: var(--text-muted);">
+              <i class="fa-solid fa-utensils" style="font-size: 2.5rem; margin-bottom: 0.75rem; color: #cbd5e1;"></i>
+              <p>No menu items published for <%= d %> yet.</p>
+            </div>
+          <% } else { %>
+            <% dayMeals.forEach(meal => { %>
+              <div class="meal-card">
+                <div class="meal-card-header">
+                  <div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+                      <%= meal.mealType %>
+                    </h3>
+                    <span class="meal-time-tag">
+                      <i class="fa-regular fa-clock"></i> <%= meal.timings %>
+                    </span>
+                  </div>
+                  <% if (meal.isSpecial) { %>
+                    <span class="badge badge-warning">Chef's Special</span>
+                  <% } else { %>
+                    <span class="badge badge-success"><%= meal.dietaryType %></span>
+                  <% } %>
+                </div>
+
+                <ul class="meal-items-list">
+                  <% meal.items.forEach(food => { %>
+                    <li><%= food %></li>
+                  <% }) %>
+                </ul>
+
+                <% if (meal.nutritionHighlight) { %>
+                  <div style="background: var(--bg-subtle); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); font-size: 0.78rem; color: var(--text-secondary); border: 1px solid var(--border-color);">
+                    <i class="fa-solid fa-leaf" style="color: var(--success); margin-right: 0.25rem;"></i>
+                    <strong>Note:</strong> <%= meal.nutritionHighlight %>
+                  </div>
+                <% } %>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      <% }) %>
+
+      <!-- Mess Timings and Rules Policy Card -->
+      <div class="card" style="margin-top: 2rem;">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-circle-info" style="color: var(--info);"></i>
+            Hostel Dining Hall Regulations & Timings
+          </h3>
+        </div>
+        <div class="card-body">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; font-size: 0.9rem;">
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><i class="fa-solid fa-mug-hot" style="color: #f59e0b;"></i> Breakfast</h4>
+              <p style="color: var(--text-secondary);">07:30 AM – 09:30 AM</p>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Hot Beverages, South & North Indian varieties</span>
+            </div>
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><i class="fa-solid fa-bowl-rice" style="color: var(--primary);"></i> Lunch</h4>
+              <p style="color: var(--text-secondary);">12:30 PM – 02:30 PM</p>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Full Course Meals, Curries, Dal, Salad, Curd</span>
+            </div>
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><i class="fa-solid fa-cookie-bite" style="color: #ec4899;"></i> Evening Snacks</h4>
+              <p style="color: var(--text-secondary);">04:45 PM – 06:00 PM</p>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Tea/Coffee with fresh savoury snacks</span>
+            </div>
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);"><i class="fa-solid fa-utensils" style="color: var(--success);"></i> Dinner</h4>
+              <p style="color: var(--text-secondary);">07:45 PM – 09:45 PM</p>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Roti/Rice, Sabzi, Paneer / Egg / Chicken on select days</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,112 @@
+<%- include('../partials/header') %>
+
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%); padding: 2.25rem 1.5rem;">
+  
+  <div style="max-width: 650px; width: 100%; background: #ffffff; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);">
+    
+    <div style="background: linear-gradient(135deg, var(--slate-900), var(--slate-800)); padding: 2rem; text-align: center; color: #ffffff; border-bottom: 2px solid var(--primary);">
+      <h2 style="color: #ffffff; font-size: 1.6rem; font-weight: 800; margin: 0;">Student Registration</h2>
+      <p style="color: var(--slate-300); font-size: 0.88rem; margin-top: 0.35rem;">Create your profile to apply for hostel rooms, mess plans, and services</p>
+    </div>
+
+    <div style="padding: 2.25rem;">
+      <%- include('../partials/alerts') %>
+
+      <form action="/auth/register" method="POST">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name *</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Rahul Sharma" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="rollNo">Roll / Registration No. *</label>
+            <input type="text" id="rollNo" name="rollNo" class="form-control" placeholder="e.g. 24CS1082" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="email">Institutional Email *</label>
+            <input type="email" id="email" name="email" class="form-control" placeholder="rahul@campus.edu" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="phone">Contact Number *</label>
+            <input type="tel" id="phone" name="phone" class="form-control" placeholder="+91 98765 43210" required>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label" for="department">Department / Branch *</label>
+            <select id="department" name="department" class="form-select" required>
+              <option value="Computer Science & Engineering">Computer Science (CSE)</option>
+              <option value="Information Technology">Information Technology (IT)</option>
+              <option value="Electronics & Communication">Electronics (ECE)</option>
+              <option value="Mechanical Engineering">Mechanical Engg (ME)</option>
+              <option value="Electrical Engineering">Electrical Engg (EE)</option>
+              <option value="Civil Engineering">Civil Engg (CE)</option>
+              <option value="Management Studies">Management (MBA/BBA)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="yearOfStudy">Year of Study *</label>
+            <select id="yearOfStudy" name="yearOfStudy" class="form-select" required>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+              <option value="Postgraduate">Postgraduate</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="gender">Gender *</label>
+            <select id="gender" name="gender" class="form-select" required>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="emergencyName">Emergency Contact Name</label>
+            <input type="text" id="emergencyName" name="emergencyName" class="form-control" placeholder="Parent / Guardian Name">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="emergencyPhone">Emergency Contact Phone</label>
+            <input type="tel" id="emergencyPhone" name="emergencyPhone" class="form-control" placeholder="Parent / Guardian Phone">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="password">Create Password *</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Minimum 6 characters" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm Password *</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Re-enter password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1rem;">
+          <i class="fa-solid fa-user-plus"></i> Complete Registration
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); font-size: 0.88rem; color: var(--text-secondary);">
+        Already registered?
+        <a href="/auth/login" style="font-weight: 700; color: var(--primary);">Sign In here</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

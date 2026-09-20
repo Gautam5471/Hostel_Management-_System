@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-main); padding: 2rem;">
+  <div style="text-align: center; max-width: 550px;">
+    <div style="font-size: 5rem; font-weight: 800; color: var(--danger); line-height: 1; margin-bottom: 1rem;">500</div>
+    <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 0.75rem;">Internal Server Error</h2>
+    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem;">
+      Something went wrong processing your request on the server.
+    </p>
+    <% if (error && error.message) { %>
+      <div style="background: var(--danger-light); color: var(--danger-text); padding: 1rem; border-radius: var(--radius-md); font-family: monospace; font-size: 0.82rem; margin-bottom: 1.5rem; text-align: left;">
+        <%= error.message %>
+      </div>
+    <% } %>
+    <a href="/" class="btn btn-primary">
+      <i class="fa-solid fa-house"></i> Return to Homepage
+    </a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

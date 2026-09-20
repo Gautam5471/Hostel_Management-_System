@@ -1,0 +1,111 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Mess Absence & Rebate Management' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Policy Info Card -->
+      <div style="background: linear-gradient(135deg, #064e3b, #065f46); border-radius: var(--radius-xl); padding: 1.75rem 2rem; color: #ffffff; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+        <h3 style="color: #ffffff; font-size: 1.25rem; font-weight: 800; margin-bottom: 0.4rem;">
+          <i class="fa-solid fa-piggy-bank" style="color: #a7f3d0; margin-right: 0.5rem;"></i>
+          Mess Rebate Policy
+        </h3>
+        <p style="color: #d1fae5; font-size: 0.9rem; line-height: 1.6; margin: 0;">
+          Students traveling home, attending off-campus internships, or on medical leave can log absence dates. Approved absent days are automatically discounted at <strong>₹150 / day</strong> from your monthly mess billing statement.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem;">
+        
+        <!-- Apply Mess Leave Form -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-calendar-plus" style="color: var(--primary);"></i>
+              Apply for Mess Leave
+            </h3>
+          </div>
+          <div class="card-body">
+            <form action="/student/mess-leave" method="POST">
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="startDate">From Date *</label>
+                  <input type="date" name="startDate" id="startDate" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="endDate">To Date *</label>
+                  <input type="date" name="endDate" id="endDate" class="form-control" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="reason">Reason for Absence *</label>
+                <textarea name="reason" id="reason" rows="3" class="form-control" placeholder="e.g. Vacation / Home visit, Academic conference, Medical leave" required></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">
+                <i class="fa-solid fa-check"></i> Submit Mess Leave
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- History of Leaves -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              Recorded Leaves & Rebates (<%= leaves.length %>)
+            </h3>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <% if (leaves.length === 0) { %>
+              <p style="text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                No mess leaves logged yet.
+              </p>
+            <% } else { %>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Dates</th>
+                      <th>Total Days</th>
+                      <th>Reason</th>
+                      <th>Rebate Deduction</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% leaves.forEach(l => { %>
+                      <tr>
+                        <td style="font-size: 0.85rem;">
+                          <%= formatDate(l.startDate) %> — <%= formatDate(l.endDate) %>
+                        </td>
+                        <td><strong><%= l.totalDays %> day(s)</strong></td>
+                        <td style="font-size: 0.85rem; color: var(--text-secondary);"><%= l.reason %></td>
+                        <td style="color: var(--success-text); font-weight: 700;">
+                          -<%= formatINR(l.totalDays * 150) %>
+                        </td>
+                        <td><span class="badge <%= getStatusBadgeClass(l.status) %>"><%= l.status %></span></td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

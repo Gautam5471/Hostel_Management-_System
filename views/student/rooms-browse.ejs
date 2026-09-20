@@ -1,0 +1,213 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Browse Hostel Rooms' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Filter Controls -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body" style="padding: 1.25rem 1.5rem;">
+          <form method="GET" action="/student/rooms" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+            
+            <div style="flex: 1; min-width: 180px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Hostel Block</label>
+              <select name="block" class="form-select">
+                <option value="all">All Blocks</option>
+                <% blocks.forEach(b => { %>
+                  <option value="<%= b._id %>" <%= selectedFilters.block == b._id.toString() ? 'selected' : '' %>>
+                    <%= b.name %> (<%= b.genderType %>)
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 160px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Room Type</label>
+              <select name="type" class="form-select">
+                <option value="all">All Types</option>
+                <option value="Single" <%= selectedFilters.type === 'Single' ? 'selected' : '' %>>Single Bed</option>
+                <option value="Double" <%= selectedFilters.type === 'Double' ? 'selected' : '' %>>Double Sharing</option>
+                <option value="Triple" <%= selectedFilters.type === 'Triple' ? 'selected' : '' %>>Triple Sharing</option>
+                <option value="Four-Bed" <%= selectedFilters.type === 'Four-Bed' ? 'selected' : '' %>>Four-Bed Sharing</option>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 140px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Air Conditioning</label>
+              <select name="ac" class="form-select">
+                <option value="all">Any AC Option</option>
+                <option value="true" <%= selectedFilters.ac === 'true' ? 'selected' : '' %>>AC Rooms</option>
+                <option value="false" <%= selectedFilters.ac === 'false' ? 'selected' : '' %>>Non-AC Rooms</option>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 140px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Availability</label>
+              <select name="status" class="form-select">
+                <option value="all">All Statuses</option>
+                <option value="Available" <%= selectedFilters.status === 'Available' ? 'selected' : '' %>>Available Only</option>
+                <option value="Full" <%= selectedFilters.status === 'Full' ? 'selected' : '' %>>Fully Occupied</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.25rem;">
+                <i class="fa-solid fa-filter"></i> Apply Filters
+              </button>
+              <a href="/student/rooms" class="btn btn-secondary" style="padding: 0.7rem 1rem;" title="Reset Filters">
+                <i class="fa-solid fa-rotate-left"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Info Banner if student already has a room or pending request -->
+      <% if (hasRoom) { %>
+        <div class="alert alert-info">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>You already have an active room allotment. If you would like to move, please use the <a href="/student/my-room" style="text-decoration: underline; font-weight: 700;">Room Change Request</a> on your My Room page.</span>
+        </div>
+      <% } else if (pendingRequest) { %>
+        <div class="alert alert-warning">
+          <i class="fa-solid fa-clock"></i>
+          <span>You have a pending allotment request submitted on <%= formatDate(pendingRequest.createdAt) %>. Please await warden approval.</span>
+        </div>
+      <% } %>
+
+      <!-- Rooms Grid -->
+      <div class="room-grid">
+        <% if (rooms.length === 0) { %>
+          <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+            <i class="fa-solid fa-door-closed" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">No Rooms Match Selected Filters</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Try broadening your filter criteria or check back later.</p>
+            <a href="/student/rooms" class="btn btn-secondary btn-sm" style="margin-top: 1rem;">Clear All Filters</a>
+          </div>
+        <% } else { %>
+          <% rooms.forEach(room => { %>
+            <div class="room-card">
+              <div class="room-card-header">
+                <div>
+                  <h3 style="color: #ffffff; font-size: 1.2rem; font-weight: 800; margin: 0;">
+                    Room <%= room.roomNumber %>
+                  </h3>
+                  <span style="font-size: 0.78rem; color: #94a3b8;"><%= room.block ? room.block.name : 'Hostel' %> &bull; Floor <%= room.floor %></span>
+                </div>
+                <span class="badge <%= getStatusBadgeClass(room.status) %>">
+                  <%= room.status %>
+                </span>
+              </div>
+
+              <div class="room-card-body">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.75rem;">
+                  <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">
+                    <%= room.roomType %> Room
+                  </span>
+                  <span style="font-size: 1.15rem; font-weight: 800; color: var(--primary);">
+                    <%= formatINR(room.pricePerMonth) %><small style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">/mo</small>
+                  </span>
+                </div>
+
+                <!-- Bed Occupancy Indicator -->
+                <div style="margin-bottom: 1rem;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">
+                    <span>Occupancy</span>
+                    <strong><%= room.occupiedBeds %> / <%= room.capacity %> Beds Filled</strong>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar <%= room.occupiedBeds >= room.capacity ? 'rose' : (room.occupiedBeds > 0 ? 'amber' : 'emerald') %>" 
+                         style="width: <%= Math.min(100, (room.occupiedBeds / room.capacity) * 100) %>%;"></div>
+                  </div>
+                </div>
+
+                <!-- Amenities Pills -->
+                <div class="room-feature-list">
+                  <span class="feature-pill"><i class="fa-solid fa-snowflake" style="color: <%= room.isAc ? 'var(--info)' : 'var(--text-muted)' %>;"></i> <%= room.isAc ? 'AC Room' : 'Non-AC' %></span>
+                  <span class="feature-pill"><i class="fa-solid fa-bath"></i> <%= room.hasAttachedBathroom ? 'Attached Bath' : 'Common Bath' %></span>
+                  <% if (room.amenities && room.amenities.length > 0) { %>
+                    <% room.amenities.slice(0, 2).forEach(am => { %>
+                      <span class="feature-pill"><%= am %></span>
+                    <% }) %>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="card-footer" style="padding: 1rem 1.5rem; background: #ffffff;">
+                <% if (!hasRoom && !pendingRequest && room.status === 'Available' && room.occupiedBeds < room.capacity) { %>
+                  <button type="button" class="btn btn-primary btn-block" data-modal-target="requestRoomModal" data-room-id="<%= room._id %>">
+                    <i class="fa-solid fa-paper-plane"></i> Request Allotment
+                  </button>
+                <% } else if (room.occupiedBeds >= room.capacity || room.status === 'Full') { %>
+                  <button type="button" class="btn btn-secondary btn-block" disabled style="opacity: 0.6; cursor: not-allowed;">
+                    <i class="fa-solid fa-ban"></i> Room Full
+                  </button>
+                <% } else { %>
+                  <button type="button" class="btn btn-secondary btn-block" disabled style="opacity: 0.6; cursor: not-allowed;">
+                    <%= hasRoom ? 'Already Allotted' : (pendingRequest ? 'Request Pending' : 'Unavailable') %>
+                  </button>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Room Request Form -->
+<div class="modal-overlay" id="requestRoomModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0;">Request Room Allotment</h3>
+      <button type="button" class="modal-close" data-modal-close>&times;</button>
+    </div>
+    <div class="modal-body">
+      <form action="/student/rooms/request" method="POST">
+        <input type="hidden" name="targetRoom" id="modalTargetRoom" value="">
+
+        <div class="form-group">
+          <label class="form-label" for="preferredBlock">Preferred Hostel Block</label>
+          <select name="preferredBlock" id="preferredBlock" class="form-select">
+            <option value="">No Preference / Any Block</option>
+            <% blocks.forEach(b => { %>
+              <option value="<%= b._id %>"><%= b.name %> (<%= b.genderType %>)</option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="preferredRoomType">Preferred Room Type</label>
+          <select name="preferredRoomType" id="preferredRoomType" class="form-select">
+            <option value="Any">Any Room Type</option>
+            <option value="Single">Single Bed</option>
+            <option value="Double">Double Sharing</option>
+            <option value="Triple">Triple Sharing</option>
+            <option value="Four-Bed">Four-Bed Sharing</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reason">Reason for Application / Preferences *</label>
+          <textarea name="reason" id="reason" rows="3" class="form-control" placeholder="Mention any medical or study preferences (e.g., quiet study requirement, ground floor preference)" required></textarea>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i> Submit Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

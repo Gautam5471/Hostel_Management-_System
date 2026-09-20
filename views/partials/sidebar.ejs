@@ -1,0 +1,125 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <i class="fa-solid fa-hotel"></i>
+    </div>
+    <div class="brand-text">
+      <h2>HostelHub</h2>
+      <span>Campus Facilities</span>
+    </div>
+  </div>
+
+  <% if (currentUser) { %>
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        <%= currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U' %>
+      </div>
+      <div class="user-info">
+        <h4><%= currentUser.name %></h4>
+        <span class="user-role-badge <%= currentUser.role === 'admin' || currentUser.role === 'warden' ? 'role-admin' : 'role-student' %>">
+          <%= currentUser.role === 'admin' ? 'Chief Warden' : 'Student' %>
+        </span>
+      </div>
+    </div>
+  <% } %>
+
+  <nav class="sidebar-nav">
+    <% if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'warden')) { %>
+      <!-- Warden / Admin Menu -->
+      <div class="nav-section-title">Overview & Analytics</div>
+      <a href="/admin/dashboard" class="sidebar-link <%= currentPath === '/admin/dashboard' ? 'active' : '' %>">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <div class="nav-section-title">Facility Administration</div>
+      <a href="/admin/blocks" class="sidebar-link <%= currentPath.startsWith('/admin/blocks') ? 'active' : '' %>">
+        <i class="fa-solid fa-building"></i>
+        <span>Hostel Blocks</span>
+      </a>
+      <a href="/admin/rooms" class="sidebar-link <%= currentPath.startsWith('/admin/rooms') ? 'active' : '' %>">
+        <i class="fa-solid fa-bed"></i>
+        <span>Rooms & Capacity</span>
+      </a>
+      <a href="/admin/requests" class="sidebar-link <%= currentPath.startsWith('/admin/requests') ? 'active' : '' %>">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <span>Room Requests</span>
+      </a>
+      <a href="/admin/allotments" class="sidebar-link <%= currentPath.startsWith('/admin/allotments') ? 'active' : '' %>">
+        <i class="fa-solid fa-id-card"></i>
+        <span>Allotments History</span>
+      </a>
+      <a href="/admin/students" class="sidebar-link <%= currentPath.startsWith('/admin/students') ? 'active' : '' %>">
+        <i class="fa-solid fa-user-graduate"></i>
+        <span>Student Directory</span>
+      </a>
+
+      <div class="nav-section-title">Operations & Services</div>
+      <a href="/admin/maintenance" class="sidebar-link <%= currentPath.startsWith('/admin/maintenance') ? 'active' : '' %>">
+        <i class="fa-solid fa-wrench"></i>
+        <span>Maintenance Helpdesk</span>
+      </a>
+      <a href="/admin/mess-menu" class="sidebar-link <%= currentPath.startsWith('/admin/mess-menu') ? 'active' : '' %>">
+        <i class="fa-solid fa-utensils"></i>
+        <span>Weekly Mess Menu</span>
+      </a>
+      <a href="/admin/mess-feedback" class="sidebar-link <%= currentPath.startsWith('/admin/mess-feedback') ? 'active' : '' %>">
+        <i class="fa-solid fa-star"></i>
+        <span>Mess Quality & Ratings</span>
+      </a>
+      <a href="/admin/mess-bills" class="sidebar-link <%= currentPath.startsWith('/admin/mess-bills') ? 'active' : '' %>">
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+        <span>Monthly Mess Billing</span>
+      </a>
+
+    <% } else if (currentUser && currentUser.role === 'student') { %>
+      <!-- Student Menu -->
+      <div class="nav-section-title">Dashboard</div>
+      <a href="/student/dashboard" class="sidebar-link <%= currentPath === '/student/dashboard' ? 'active' : '' %>">
+        <i class="fa-solid fa-gauge-high"></i>
+        <span>My Dashboard</span>
+      </a>
+
+      <div class="nav-section-title">Room & Living</div>
+      <a href="/student/my-room" class="sidebar-link <%= currentPath === '/student/my-room' ? 'active' : '' %>">
+        <i class="fa-solid fa-door-open"></i>
+        <span>My Room & Roommates</span>
+      </a>
+      <a href="/student/rooms" class="sidebar-link <%= currentPath === '/student/rooms' ? 'active' : '' %>">
+        <i class="fa-solid fa-magnifying-glass-location"></i>
+        <span>Browse Rooms</span>
+      </a>
+      <a href="/student/maintenance" class="sidebar-link <%= currentPath === '/student/maintenance' ? 'active' : '' %>">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+        <span>Maintenance Tickets</span>
+      </a>
+
+      <div class="nav-section-title">Dining & Services</div>
+      <a href="/student/mess-menu" class="sidebar-link <%= currentPath === '/student/mess-menu' ? 'active' : '' %>">
+        <i class="fa-solid fa-utensils"></i>
+        <span>Weekly Mess Menu</span>
+      </a>
+      <a href="/student/mess-feedback" class="sidebar-link <%= currentPath === '/student/mess-feedback' ? 'active' : '' %>">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span>Meal Feedback</span>
+      </a>
+      <a href="/student/mess-leave" class="sidebar-link <%= currentPath === '/student/mess-leave' ? 'active' : '' %>">
+        <i class="fa-solid fa-calendar-minus"></i>
+        <span>Mess Leave & Rebates</span>
+      </a>
+      <a href="/student/bills" class="sidebar-link <%= currentPath === '/student/bills' ? 'active' : '' %>">
+        <i class="fa-solid fa-receipt"></i>
+        <span>Mess Bills & Invoices</span>
+      </a>
+    <% } %>
+  </nav>
+
+  <% if (currentUser) { %>
+    <div class="sidebar-footer">
+      <a href="/auth/logout" class="logout-btn">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Sign Out</span>
+      </a>
+    </div>
+  <% } %>
+</aside>

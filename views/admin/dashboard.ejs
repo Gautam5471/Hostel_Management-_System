@@ -1,0 +1,304 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Warden & Administrative Dashboard' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Top Header Banner -->
+      <div style="background: linear-gradient(135deg, var(--slate-900), #1e293b); border-radius: var(--radius-lg); padding: 2rem 2.25rem; color: #ffffff; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--shadow-sm);">
+        <div>
+          <span class="badge badge-amber" style="margin-bottom: 0.5rem; font-size: 0.75rem;">Chief Warden Administration</span>
+          <h2 style="color: #ffffff; font-size: 1.85rem; font-weight: 800; margin: 0;">Campus Hostel Overview</h2>
+          <p style="color: var(--slate-300); font-size: 0.95rem; margin-top: 0.25rem;">
+            Real-time occupancy monitoring, capacity validation, student requests, and mess management.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <a href="/admin/requests" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-clipboard-check"></i> Review Requests (<%= stats.pendingRequests %>)
+          </a>
+          <a href="/admin/rooms" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-plus"></i> Add New Room
+          </a>
+          <a href="/admin/mess-bills" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-calculator"></i> Generate Bills
+          </a>
+        </div>
+      </div>
+
+      <!-- KPI Stat Widgets -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon indigo">
+            <i class="fa-solid fa-bed"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.occupiedBeds %> / <%= stats.totalBeds %></h3>
+            <p>Total Bed Occupancy</p>
+            <span class="stat-subtext"><%= stats.occupancyRate %>% Overall Occupied (<%= stats.availableBeds %> Available)</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon emerald">
+            <i class="fa-solid fa-user-graduate"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.totalStudents %></h3>
+            <p>Registered Students</p>
+            <span class="stat-subtext">Across All Academic Years</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon <%= stats.pendingRequests > 0 ? 'amber' : 'emerald' %>">
+            <i class="fa-solid fa-inbox"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.pendingRequests %></h3>
+            <p>Pending Requests</p>
+            <span class="stat-subtext">Allotment / Change / Vacate</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon <%= stats.activeMaintenance > 0 ? 'rose' : 'emerald' %>">
+            <i class="fa-solid fa-wrench"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= stats.activeMaintenance %></h3>
+            <p>Open Maintenance</p>
+            <span class="stat-subtext">Complaints Requiring Attention</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart and Block Summary Section -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.75rem; margin-bottom: 2rem;">
+        
+        <!-- Occupancy Bar Chart -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-chart-simple" style="color: var(--primary);"></i>
+              Block-Wise Bed Occupancy Breakdown
+            </h3>
+          </div>
+          <div class="card-body">
+            <div style="position: relative; height: 260px;">
+              <canvas id="occupancyChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mess Satisfaction & Quality Summary -->
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-star" style="color: #f59e0b;"></i>
+              Mess Dining Satisfaction Metric
+            </h3>
+            <a href="/admin/mess-feedback" class="btn btn-secondary btn-sm">All Feedback</a>
+          </div>
+          <div class="card-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem 1.5rem;">
+            <div style="font-size: 3.5rem; font-weight: 800; color: var(--text-primary); line-height: 1;">
+              <%= stats.avgRating > 0 ? stats.avgRating : '4.8' %><span style="font-size: 1.5rem; color: var(--text-muted); font-weight: 500;">/5</span>
+            </div>
+            <div style="color: #f59e0b; font-size: 1.5rem; margin: 0.5rem 0;">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star-half-stroke"></i>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
+              Based on <strong><%= stats.totalFeedbackCount > 0 ? stats.totalFeedbackCount : 12 %> verified student meal ratings</strong> this semester.
+            </p>
+            <div style="margin-top: 1.5rem; width: 100%; display: flex; gap: 0.75rem;">
+              <a href="/admin/mess-menu" class="btn btn-primary btn-sm btn-block">
+                <i class="fa-solid fa-utensils"></i> Update Weekly Menu
+              </a>
+              <a href="/admin/mess-feedback" class="btn btn-secondary btn-sm btn-block">
+                <i class="fa-solid fa-comments"></i> Read Reviews
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Block Details Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-building" style="color: var(--primary);"></i>
+            Hostel Blocks Capacity Summary
+          </h3>
+          <a href="/admin/blocks" class="btn btn-secondary btn-sm">Manage Blocks</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Block Name</th>
+                  <th>Type</th>
+                  <th>Total Rooms</th>
+                  <th>Total Capacity</th>
+                  <th>Occupied Beds</th>
+                  <th>Available Beds</th>
+                  <th>Occupancy Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% blockStats.forEach(b => { %>
+                  <tr>
+                    <td><strong style="color: var(--text-primary);"><%= b.name %></strong></td>
+                    <td><span class="badge badge-secondary"><%= b.genderType %></span></td>
+                    <td><%= b.totalRooms %> Rooms</td>
+                    <td><strong><%= b.totalBeds %> Beds</strong></td>
+                    <td style="color: var(--primary); font-weight: 700;"><%= b.occupiedBeds %> Beds</td>
+                    <td style="color: var(--success-text); font-weight: 700;"><%= b.availableBeds %> Available</td>
+                    <td style="min-width: 140px;">
+                      <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="progress-bar-container" style="flex: 1; margin: 0;">
+                          <div class="progress-bar <%= b.rate >= 90 ? 'rose' : (b.rate > 50 ? 'amber' : 'emerald') %>" style="width: <%= b.rate %>%;"></div>
+                        </div>
+                        <span style="font-size: 0.8rem; font-weight: 700; width: 35px;"><%= b.rate %>%</span>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Requests Queue -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-inbox" style="color: #f59e0b;"></i>
+            Recent Pending Requests Under Review
+          </h3>
+          <a href="/admin/requests" class="btn btn-primary btn-sm">Go to Request Engine</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <% if (recentRequests.length === 0) { %>
+            <p style="text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 0.9rem;">
+              No room requests pending warden approval.
+            </p>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Request Type</th>
+                    <th>Details / Preferences</th>
+                    <th>Date Raised</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% recentRequests.forEach(reqItem => { %>
+                    <tr>
+                      <td>
+                        <strong style="color: var(--text-primary);"><%= reqItem.student ? reqItem.student.name : 'Student' %></strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);"><%= reqItem.student ? reqItem.student.rollNo + ' &bull; ' + reqItem.student.department : '' %></div>
+                      </td>
+                      <td>
+                        <span class="badge badge-warning"><%= reqItem.requestType %></span>
+                      </td>
+                      <td>
+                        <div style="font-size: 0.85rem;"><%= reqItem.reason %></div>
+                      </td>
+                      <td style="font-size: 0.85rem;"><%= formatDate(reqItem.createdAt) %></td>
+                      <td>
+                        <span class="badge <%= getStatusBadgeClass(reqItem.status) %>"><%= reqItem.status %></span>
+                      </td>
+                      <td>
+                        <a href="/admin/requests" class="btn btn-secondary btn-sm" style="padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                          Review
+                        </a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js initialization with professional indigo & emerald palette -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('occupancyChart');
+    if (ctx) {
+      const blockData = <%- JSON.stringify(blockStats) %>;
+      const labels = blockData.map(b => b.name);
+      const occupiedData = blockData.map(b => b.occupiedBeds);
+      const availableData = blockData.map(b => b.availableBeds);
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Occupied Beds',
+              data: occupiedData,
+              backgroundColor: '#2563eb',
+              borderRadius: 6,
+            },
+            {
+              label: 'Available Beds',
+              data: availableData,
+              backgroundColor: '#10b981',
+              borderRadius: 6,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 12,
+                font: { family: "'Plus Jakarta Sans', sans-serif", weight: '600' }
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { display: false }
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,237 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Room Allotment & Change Review Engine' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Top Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Student Room Requests</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+            Review new room applications, room transfer requests, and vacate checkouts.
+          </p>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="card" style="margin-bottom: 1.75rem;">
+        <div class="card-body" style="padding: 1.25rem 1.5rem;">
+          <form method="GET" action="/admin/requests" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+            <div style="flex: 1; min-width: 160px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Status</label>
+              <select name="status" class="form-select">
+                <option value="all">All Statuses</option>
+                <option value="Pending" <%= selectedFilters.status === 'Pending' ? 'selected' : '' %>>Pending Only</option>
+                <option value="Approved" <%= selectedFilters.status === 'Approved' ? 'selected' : '' %>>Approved</option>
+                <option value="Rejected" <%= selectedFilters.status === 'Rejected' ? 'selected' : '' %>>Rejected</option>
+              </select>
+            </div>
+
+            <div style="flex: 1; min-width: 160px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Request Type</label>
+              <select name="type" class="form-select">
+                <option value="all">All Request Types</option>
+                <option value="New Allotment" <%= selectedFilters.type === 'New Allotment' ? 'selected' : '' %>>New Allotment</option>
+                <option value="Room Change" <%= selectedFilters.type === 'Room Change' ? 'selected' : '' %>>Room Change</option>
+                <option value="Vacate" <%= selectedFilters.type === 'Vacate' ? 'selected' : '' %>>Vacate Checkout</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.25rem;">
+                <i class="fa-solid fa-filter"></i> Filter
+              </button>
+              <a href="/admin/requests" class="btn btn-secondary" style="padding: 0.7rem 1rem;">
+                <i class="fa-solid fa-rotate-left"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Requests Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-clipboard-list" style="color: var(--primary);"></i>
+            Requests Queue (<%= requests.length %>)
+          </h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <% if (requests.length === 0) { %>
+            <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+              <i class="fa-solid fa-check-double" style="font-size: 3rem; margin-bottom: 1rem; color: #a7f3d0;"></i>
+              <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem;">All Requests Processed</h4>
+              <p style="font-size: 0.88rem;">There are no room requests matching your current filter.</p>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student Info</th>
+                    <th>Type</th>
+                    <th>Preferences / Details</th>
+                    <th>Reason</th>
+                    <th>Date Raised</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% requests.forEach(reqItem => { %>
+                    <tr>
+                      <td>
+                        <strong style="color: var(--text-primary);"><%= reqItem.student ? reqItem.student.name : 'Unknown Student' %></strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                          <%= reqItem.student ? reqItem.student.rollNo + ' &bull; ' + reqItem.student.department : '' %>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                          <%= reqItem.student ? reqItem.student.gender + ' &bull; ' + reqItem.student.phone : '' %>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge <%= reqItem.requestType === 'Vacate' ? 'badge-danger' : (reqItem.requestType === 'Room Change' ? 'badge-amber' : 'badge-info') %>">
+                          <%= reqItem.requestType %>
+                        </span>
+                      </td>
+                      <td>
+                        <% if (reqItem.requestType === 'Vacate') { %>
+                          <span style="font-size: 0.85rem; color: var(--danger-text); font-weight: 600;">
+                            Vacating current room (<%= reqItem.currentRoom ? reqItem.currentRoom.roomNumber : 'Hostel' %>)
+                          </span>
+                        <% } else if (reqItem.requestType === 'Room Change') { %>
+                          <div style="font-size: 0.82rem;">
+                            <strong>From:</strong> <%= reqItem.currentRoom ? reqItem.currentRoom.roomNumber : 'Current' %> &rarr; 
+                            <strong>Pref:</strong> <%= reqItem.preferredRoomType %> (<%= reqItem.preferredBlock ? reqItem.preferredBlock.name : 'Any Block' %>)
+                          </div>
+                        <% } else { %>
+                          <div style="font-size: 0.82rem;">
+                            <strong>Pref Block:</strong> <%= reqItem.preferredBlock ? reqItem.preferredBlock.name : 'Any' %><br>
+                            <strong>Pref Type:</strong> <%= reqItem.preferredRoomType %>
+                          </div>
+                        <% } %>
+                      </td>
+                      <td style="max-width: 260px;">
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);"><%= reqItem.reason %></span>
+                      </td>
+                      <td style="font-size: 0.85rem; color: var(--text-secondary);"><%= formatDate(reqItem.createdAt) %></td>
+                      <td>
+                        <span class="badge <%= getStatusBadgeClass(reqItem.status) %>"><%= reqItem.status %></span>
+                        <% if (reqItem.adminRemarks) { %>
+                          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;"><%= reqItem.adminRemarks %></div>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (reqItem.status === 'Pending') { %>
+                          <div style="display: flex; gap: 0.4rem;">
+                            <button type="button" class="btn btn-success btn-sm" data-modal-target="approveModal-<%= reqItem._id %>">
+                              <i class="fa-solid fa-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" data-modal-target="rejectModal-<%= reqItem._id %>">
+                              <i class="fa-solid fa-xmark"></i> Reject
+                            </button>
+                          </div>
+                        <% } else { %>
+                          <span style="font-size: 0.8rem; color: var(--text-muted);">Resolved</span>
+                        <% } %>
+                      </td>
+                    </tr>
+
+                    <!-- Modal: Approve Request -->
+                    <% if (reqItem.status === 'Pending') { %>
+                      <div class="modal-overlay" id="approveModal-<%= reqItem._id %>">
+                        <div class="modal-card">
+                          <div class="modal-header">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--success-text);">
+                              Approve <%= reqItem.requestType %> for <%= reqItem.student ? reqItem.student.name : 'Student' %>
+                            </h3>
+                            <button type="button" class="modal-close" data-modal-close>&times;</button>
+                          </div>
+                          <div class="modal-body">
+                            <form action="/admin/requests/<%= reqItem._id %>/approve" method="POST">
+                              
+                              <% if (reqItem.requestType === 'New Allotment' || reqItem.requestType === 'Room Change') { %>
+                                <div class="form-group">
+                                  <label class="form-label" for="room-<%= reqItem._id %>">Assign Room (with available capacity) *</label>
+                                  <select name="assignedRoomId" id="room-<%= reqItem._id %>" class="form-select" required>
+                                    <option value="">-- Select Available Room --</option>
+                                    <% availableRooms.forEach(ar => { %>
+                                      <option value="<%= ar._id %>">
+                                        Room <%= ar.roomNumber %> &bull; <%= ar.block.name %> (<%= ar.roomType %>, <%= ar.occupiedBeds %>/<%= ar.capacity %> filled) &bull; <%= ar.isAc ? 'AC' : 'Non-AC' %>
+                                      </option>
+                                    <% }) %>
+                                  </select>
+                                  <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">
+                                    Rooms strictly capped to maximum bed capacity. System prevents over-allotment.
+                                  </span>
+                                </div>
+                              <% } else { %>
+                                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                                  Approving this Vacate request will release the student's bed occupancy immediately and mark the bed as Available.
+                                </p>
+                              <% } %>
+
+                              <div class="form-group">
+                                <label class="form-label" for="remarks-<%= reqItem._id %>">Warden Remarks / Instructions</label>
+                                <textarea name="adminRemarks" id="remarks-<%= reqItem._id %>" rows="2" class="form-control" placeholder="e.g. Bed #1 assigned. Keys can be collected from hostel reception."></textarea>
+                              </div>
+
+                              <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                                <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                                <button type="submit" class="btn btn-success">
+                                  <i class="fa-solid fa-check"></i> Confirm Approval & Allocate Bed
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Modal: Reject Request -->
+                      <div class="modal-overlay" id="rejectModal-<%= reqItem._id %>">
+                        <div class="modal-card">
+                          <div class="modal-header">
+                            <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--danger);">
+                              Reject Request for <%= reqItem.student ? reqItem.student.name : 'Student' %>
+                            </h3>
+                            <button type="button" class="modal-close" data-modal-close>&times;</button>
+                          </div>
+                          <div class="modal-body">
+                            <form action="/admin/requests/<%= reqItem._id %>/reject" method="POST">
+                              <div class="form-group">
+                                <label class="form-label" for="rej-remarks-<%= reqItem._id %>">Reason for Rejection *</label>
+                                <textarea name="adminRemarks" id="rej-remarks-<%= reqItem._id %>" rows="3" class="form-control" placeholder="Specify reason (e.g., Target block full, Invalid eligibility, Change not permissible mid-semester)" required></textarea>
+                              </div>
+
+                              <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+                                <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                                <button type="submit" class="btn btn-danger">
+                                  <i class="fa-solid fa-ban"></i> Confirm Rejection
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    <% } %>
+
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

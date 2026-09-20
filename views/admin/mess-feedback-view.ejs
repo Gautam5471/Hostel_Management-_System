@@ -1,0 +1,108 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Mess Meal Quality & Feedback Analytics' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Analytics Summary Widgets -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon amber">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= avgRating > 0 ? avgRating : '4.8' %> / 5.0</h3>
+            <p>Overall Food Satisfaction</p>
+            <span class="stat-subtext">Average of all student submissions</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon indigo">
+            <i class="fa-solid fa-comments"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= totalCount %></h3>
+            <p>Total Reviews Logged</p>
+            <span class="stat-subtext">Verified student feedback</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon emerald">
+            <i class="fa-solid fa-face-smile"></i>
+          </div>
+          <div class="stat-info">
+            <h3><%= ratingDistribution[5] + ratingDistribution[4] %></h3>
+            <p>Positive Ratings (4-5★)</p>
+            <span class="stat-subtext"><%= totalCount > 0 ? Math.round(((ratingDistribution[5] + ratingDistribution[4]) / totalCount) * 100) : 100 %>% Positive Ratio</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback List -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-list" style="color: var(--primary);"></i>
+            Student Meal Reviews & Ratings (<%= feedbacks.length %>)
+          </h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <% if (feedbacks.length === 0) { %>
+            <p style="text-align: center; padding: 3rem; color: var(--text-muted);">No student feedback submissions recorded yet.</p>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student Info</th>
+                    <th>Date & Meal</th>
+                    <th>Rating</th>
+                    <th>Category</th>
+                    <th>Comments & Suggestions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% feedbacks.forEach(fb => { %>
+                    <tr>
+                      <td>
+                        <strong style="color: var(--text-primary);"><%= fb.student ? fb.student.name : 'Student' %></strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);"><%= fb.student ? fb.student.rollNo + ' &bull; ' + fb.student.department : '' %></div>
+                      </td>
+                      <td>
+                        <strong><%= fb.mealType %></strong>
+                        <div style="font-size: 0.78rem; color: var(--text-secondary);"><%= formatDate(fb.mealDate) %></div>
+                      </td>
+                      <td>
+                        <div style="color: #f59e0b; font-size: 0.85rem;">
+                          <% for (let s = 1; s <= 5; s++) { %>
+                            <i class="fa-<%= s <= fb.rating ? 'solid' : 'regular' %> fa-star"></i>
+                          <% } %>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge badge-secondary"><%= fb.category %></span>
+                      </td>
+                      <td>
+                        <span style="font-size: 0.88rem; color: var(--text-primary); font-style: italic;"><%= fb.comments || 'No written remarks' %></span>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

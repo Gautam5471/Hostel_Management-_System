@@ -1,0 +1,117 @@
+<%- include('../partials/header') %>
+
+<div class="app-layout">
+  <%- include('../partials/sidebar') %>
+
+  <div class="main-content">
+    <%- include('../partials/navbar', { pageHeading: 'Room Allotments & Bed Assignment Directory' }) %>
+
+    <div class="content-wrapper">
+      <%- include('../partials/alerts') %>
+
+      <!-- Top Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0;">Room Allotments History</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;">
+            Full historical audit of active and past student bed assignments.
+          </p>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="card" style="margin-bottom: 1.75rem;">
+        <div class="card-body" style="padding: 1.25rem 1.5rem;">
+          <form method="GET" action="/admin/allotments" style="display: flex; gap: 1rem; align-items: flex-end;">
+            <div style="flex: 1; max-width: 250px;">
+              <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.25rem;">Allotment Status</label>
+              <select name="status" class="form-select">
+                <option value="all">All Allotments</option>
+                <option value="Active" <%= selectedStatus === 'Active' ? 'selected' : '' %>>Active Only</option>
+                <option value="Vacated" <%= selectedStatus === 'Vacated' ? 'selected' : '' %>>Vacated</option>
+                <option value="Transferred" <%= selectedStatus === 'Transferred' ? 'selected' : '' %>>Transferred</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.25rem;">
+              <i class="fa-solid fa-filter"></i> Filter
+            </button>
+            <a href="/admin/allotments" class="btn btn-secondary" style="padding: 0.7rem 1rem;">
+              <i class="fa-solid fa-rotate-left"></i>
+            </a>
+          </form>
+        </div>
+      </div>
+
+      <!-- Allotments Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="fa-solid fa-id-card" style="color: var(--primary);"></i>
+            Allotments List (<%= allotments.length %>)
+          </h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <% if (allotments.length === 0) { %>
+            <p style="text-align: center; padding: 3rem; color: var(--text-muted);">No allotment records found.</p>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student Details</th>
+                    <th>Room & Bed</th>
+                    <th>Hostel Block</th>
+                    <th>Allotted Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% allotments.forEach(a => { %>
+                    <tr>
+                      <td>
+                        <strong style="color: var(--text-primary);"><%= a.student ? a.student.name : 'Unknown' %></strong>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);"><%= a.student ? a.student.rollNo + ' &bull; ' + a.student.department : '' %></div>
+                      </td>
+                      <td>
+                        <strong style="color: var(--primary);">Room <%= a.room ? a.room.roomNumber : 'N/A' %></strong>
+                        <div style="font-size: 0.78rem; color: var(--text-secondary);">Bed #<%= a.bedNumber %> (<%= a.room ? a.room.roomType : '' %>)</div>
+                      </td>
+                      <td>
+                        <%= a.room && a.room.block ? a.room.block.name : 'N/A' %>
+                      </td>
+                      <td style="font-size: 0.85rem; color: var(--text-secondary);">
+                        <%= formatDate(a.allottedDate) %>
+                        <% if (a.vacatedDate) { %>
+                          <div style="font-size: 0.75rem; color: var(--danger-text);">Vacated: <%= formatDate(a.vacatedDate) %></div>
+                        <% } %>
+                      </td>
+                      <td>
+                        <span class="badge <%= getStatusBadgeClass(a.status) %>"><%= a.status %></span>
+                      </td>
+                      <td>
+                        <% if (a.status === 'Active') { %>
+                          <form action="/admin/allotments/<%= a._id %>/vacate" method="POST" onsubmit="return confirm('Vacate student <%= a.student ? a.student.name : '' %> from Room <%= a.room ? a.room.roomNumber : '' %>? This will free the bed immediately.');" style="margin: 0;">
+                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.3rem 0.65rem; font-size: 0.78rem;">
+                              <i class="fa-solid fa-door-open"></i> Vacate Bed
+                            </button>
+                          </form>
+                        <% } else { %>
+                          <span style="font-size: 0.78rem; color: var(--text-muted); font-style: italic;">Inactive</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
